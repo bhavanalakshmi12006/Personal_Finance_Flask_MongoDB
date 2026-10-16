@@ -1,7 +1,7 @@
 """Create the tester account and realistic sample finance data (safe to re-run)."""
 import os
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from bson import ObjectId
 from dotenv import load_dotenv
@@ -27,7 +27,7 @@ def seed_database(db):
     else:
         uid = ObjectId()
         db.users.insert_one({"_id": uid, "username": USERNAME, "display_name": "Demo Tester",
-                             "password_hash": generate_password_hash(PASSWORD), "created_at": datetime.utcnow()})
+                             "password_hash": generate_password_hash(PASSWORD), "created_at": datetime.now(timezone.utc)})
 
     categories = ["Food", "Transport", "Housing", "Utilities", "Shopping", "Health", "Education", "Entertainment", "Travel", "Subscriptions"]
     merchant_titles = {
@@ -75,13 +75,13 @@ def seed_database(db):
 
     this_month = date.today().strftime("%Y-%m")
     for category, amount in [("Overall", 42000), ("Food", 9000), ("Transport", 5000), ("Shopping", 6000), ("Entertainment", 3500)]:
-        db.budgets.insert_one({"user_id": uid, "month": this_month, "category": category, "amount": float(amount), "created_at": datetime.utcnow()})
+        db.budgets.insert_one({"user_id": uid, "month": this_month, "category": category, "amount": float(amount), "created_at": datetime.now(timezone.utc)})
 
     for doc in [
         {"user_id": uid, "title": "Emergency fund", "amount": 10000.0, "date": date.today().isoformat(), "note": "Demo savings"},
         {"user_id": uid, "title": "Travel fund", "amount": 5000.0, "date": date.today().isoformat(), "note": "Demo savings"},
     ]:
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = datetime.now(timezone.utc)
         db.savings.insert_one(doc)
 
     for title, amount, due, status in [
@@ -90,7 +90,7 @@ def seed_database(db):
         ("Mobile plan", 599, date.today() - timedelta(days=3), "Paid"),
     ]:
         db.bills.insert_one({"user_id": uid, "title": title, "amount": float(amount), "due_date": due.isoformat(),
-                             "status": status, "created_at": datetime.utcnow()})
+                             "status": status, "created_at": datetime.now(timezone.utc)})
 
     for title, target, saved, deadline in [
         ("Emergency fund", 150000, 45000, date.today() + timedelta(days=300)),
@@ -98,7 +98,7 @@ def seed_database(db):
         ("Vacation", 60000, 12000, date.today() + timedelta(days=240)),
     ]:
         db.financial_goals.insert_one({"user_id": uid, "title": title, "target_amount": float(target),
-                                       "saved_amount": float(saved), "deadline": deadline.isoformat(), "created_at": datetime.utcnow()})
+                                       "saved_amount": float(saved), "deadline": deadline.isoformat(), "created_at": datetime.now(timezone.utc)})
 
     try:
         db.users.create_index("username", unique=True)
